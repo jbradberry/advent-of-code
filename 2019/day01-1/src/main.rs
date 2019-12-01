@@ -8,8 +8,12 @@ fn read() -> Vec<u32> {
 }
 
 
+fn fuel_req(mass: u32) -> u32 { mass / 3 - 2 }
+
+
 fn main() {
     let mass = read();
+    let total: u32 = mass.iter().map(|&m| fuel_req(m)).sum();
 
-    println!("{:?}", mass);
+    println!("total fuel requirement: {}", total);
 }
