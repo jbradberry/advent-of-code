@@ -23,7 +23,7 @@ fn main() {
         let combo = digits.iter().fold(0, |acc, d| 10 * acc + d);
         if !range.contains(&combo) { continue; }
 
-        if digits.iter().collect::<Counter<_>>().values().collect::<Vec<_>>().contains(&&2) {
+        if digits.iter().collect::<Counter<_>>().values().any(|&x| x == 2) {
             count += 1;
         }
     }
