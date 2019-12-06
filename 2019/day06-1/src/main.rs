@@ -14,6 +14,19 @@ fn read() -> HashMap<String, String> {
 }
 
 
+fn count_orbits(orbitals: &HashMap<String, String>, object: &str) -> u32 {
+    if orbitals.contains_key(object) { count_orbits(orbitals, orbitals.get(object).unwrap()) + 1 }
+    else { 0 }
+}
+
+
 fn main() {
-    let orbits = read();
+    let orbitals = read();
+    let mut orbits = 0;
+
+    for object in orbitals.keys() {
+        orbits += count_orbits(&orbitals, object);
+    }
+
+    println!("orbits: {}", orbits);
 }
