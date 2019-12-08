@@ -20,7 +20,7 @@ fn main() {
         .collect::<Vec<_>>();
 
     let pixels = multizip((&layers[0], &layers[1], &layers[2], &layers[3]))
-        .map(|t| vec![t.0, t.1, t.2, t.3])
+        .map(|(&a, &b, &c, &d)| vec![a, b, c, d].into_iter().filter(|&x| x > 0).next().unwrap_or(0))
         .collect::<Vec<_>>();
 
     println!("{:#?}", pixels);
