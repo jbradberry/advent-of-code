@@ -20,4 +20,9 @@ fn main() {
         .map(|c| c.collect::<Vec<u32>>())
         .min_by_key(|c| c.iter().filter(|&&x| x == 0).count())
         .unwrap();
+
+    let ones = &min_zeros.iter().filter(|&&x| x == 1).count();
+    let twos = &min_zeros.iter().filter(|&&x| x == 2).count();
+
+    println!("checksum: {}", ones * twos);
 }
