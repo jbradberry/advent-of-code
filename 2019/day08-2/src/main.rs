@@ -1,7 +1,7 @@
 use std::io;
 use std::io::prelude::*;
 
-use itertools::{Itertools, multizip};
+use itertools::Itertools;
 
 
 fn read() -> Vec<u32> {
@@ -14,14 +14,19 @@ fn read() -> Vec<u32> {
 
 fn main() {
     let data = read();
-    let layers = &data.into_iter().chunks(25 * 6)
+    let layers = data.into_iter().chunks(25 * 6)
         .into_iter()
         .map(|c| c.collect::<Vec<u32>>())
         .collect::<Vec<_>>();
 
-    let pixels = multizip((&layers[0], &layers[1], &layers[2], &layers[3]))
-        .map(|(&a, &b, &c, &d)| vec![a, b, c, d].into_iter().filter(|&x| x > 0).next().unwrap_or(0))
-        .collect::<Vec<_>>();
+    let pixels = layers.into_iter().fold1(|layer1, layer2| {
+        layer1.into_iter().zip(layer2.into_iter())
+            .map(|(a, b)| vec![a, b].into_iter().filter(|&x| x != 2).next().unwrap_or(2))
+            .collect::<Vec<_>>()
+    }).unwrap();
 
-    println!("{:#?}", pixels);
+    &pixels.into_iter().chunks(25)
+        .into_iter()
+        .map(|c| c.into_iter().map(|x| match x { 0 => ".", 1 => "#", _ => " " }).join(""))
+        .for_each(|line| println!("{}", line));
 }
