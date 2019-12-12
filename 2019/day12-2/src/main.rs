@@ -47,7 +47,7 @@ fn main() {
     let mut moons = read();
     let mut moon_records = vec![moons.to_vec()];
 
-    for _ in 0..1000000 {
+    for _ in 0..2_000_000 {
         for pair in (0..4).combinations(2) {
             let mut m1 = moons[pair[0]];
             let mut m2 = moons[pair[1]];
@@ -84,17 +84,18 @@ fn main() {
     let mut cycles = Vec::new();
     for m_i in 0..4 {
         for field in 0..3 {
-            let candidates = moon_records[0..500000].iter()
+            let candidates = moon_records[0..1_000_000].iter()
                 .enumerate()
                 .filter_map(|(i, rec)| match field {
-                    0 => if rec[m_i].x == rec[0].x { Some(i) } else { None },
-                    1 => if rec[m_i].y == rec[0].y { Some(i) } else { None },
-                    2 => if rec[m_i].z == rec[0].z { Some(i) } else { None },
+                    0 => if rec[m_i].x == moon_records[0][m_i].x { Some(i) } else { None },
+                    1 => if rec[m_i].y == moon_records[0][m_i].y { Some(i) } else { None },
+                    2 => if rec[m_i].z == moon_records[0][m_i].z { Some(i) } else { None },
                     _ => unreachable!(),
                 })
                 .collect::<Vec<_>>();
             let mut cand_iter = candidates.iter();
             cand_iter.next();
+            let mut candidate = 1;
             for &c in cand_iter {
                 if moon_records[0..c].iter()
                     .zip(moon_records[c..2*c].iter())
@@ -104,10 +105,11 @@ fn main() {
                         2 => a[m_i].z == b[m_i].z,
                         _ => unreachable!(),
                     }) {
-                        cycles.push(c);
+                        candidate = c;
                         break;
                     }
             }
+            cycles.push(candidate);
         }
     }
 
