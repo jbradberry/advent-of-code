@@ -1,5 +1,4 @@
 use std::cmp::Ordering;
-use std::collections::HashSet;
 use std::io;
 use std::io::prelude::*;
 
@@ -37,10 +36,9 @@ fn read() -> Vec<Moon> {
 
 fn main() {
     let mut moons = read();
-    let mut previous = HashSet::new();
-    previous.insert((moons[0], moons[1], moons[2], moons[3]));
+    let original_moons = moons.to_vec();
 
-    let mut step = 0;
+    let mut step = 0u64;
     loop {
         for pair in (0..4).combinations(2) {
             let mut m1 = moons[pair[0]];
@@ -72,10 +70,11 @@ fn main() {
             moon.z += moon.vz;
         }
 
-        let key = (moons[0], moons[1], moons[2], moons[3]);
-        if previous.contains(&key) { break; }
-        previous.insert(key);
         step += 1;
+
+        if step % 1000000 == 0 { println!("{}", step); }
+
+        if moons == original_moons { break; }
     }
 
     println!("steps to repeat: {}", step);
