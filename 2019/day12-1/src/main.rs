@@ -6,7 +6,7 @@ use itertools::Itertools;
 use regex::Regex;
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 struct Moon {
     x: i32,
     y: i32,
@@ -37,10 +37,10 @@ fn read() -> Vec<Moon> {
 fn main() {
     let mut moons = read();
 
-    for step in 0..1000 {
+    for _step in 0..1000 {
         for pair in (0..4).combinations(2) {
-            let m1 = &moons[pair[0]];
-            let m2 = &moons[pair[1]];
+            let mut m1 = moons[pair[0]];
+            let mut m2 = moons[pair[1]];
 
             match m1.x.cmp(&m2.x) {
                 Ordering::Less => { m1.vx += 1; m2.vx -= 1; },
@@ -57,9 +57,12 @@ fn main() {
                 Ordering::Greater => { m1.vz -= 1; m2.vz += 1; },
                 Ordering::Equal => {},
             }
+
+            moons[pair[0]] = m1;
+            moons[pair[1]] = m2;
         }
 
-        for moon in &moons {
+        for moon in &mut moons {
             moon.x += moon.vx;
             moon.y += moon.vy;
             moon.z += moon.vz;
