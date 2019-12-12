@@ -4,6 +4,7 @@ use std::io::prelude::*;
 
 use itertools::Itertools;
 use regex::Regex;
+use num::Integer;
 
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -88,4 +89,5 @@ fn main() {
     }
 
     println!("cycle steps: {:?}", cycles);
+    println!("steps to repeat: {}", cycles.iter().fold(1, |a, b| a.lcm(&b)));
 }
