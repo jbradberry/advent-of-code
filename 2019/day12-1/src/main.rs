@@ -34,6 +34,26 @@ fn read() -> Vec<Moon> {
 }
 
 
+fn display_energy(moons: &[Moon]) {
+    let mut total = Vec::new();
+    for moon in moons {
+        let pot = vec![moon.x.abs(), moon.y.abs(), moon.z.abs()];
+        let kin = vec![moon.vx.abs(), moon.vy.abs(), moon.vz.abs()];
+        let pot_sum: i32 = pot.iter().sum();
+        let kin_sum: i32 = kin.iter().sum();
+
+        println!(
+            "pot: {} = {}; kin: {} = {};   total: {} * {} = {}",
+            pot.iter().join(" + "), pot_sum,
+            kin.iter().join(" + "), kin_sum,
+            pot_sum, kin_sum, pot_sum * kin_sum
+        );
+        total.push(pot_sum * kin_sum);
+    }
+    println!("Sum of total energy: {} = {}", total.iter().join(" + "), total.iter().sum::<i32>());
+}
+
+
 fn main() {
     let mut moons = read();
 
@@ -68,4 +88,6 @@ fn main() {
             moon.z += moon.vz;
         }
     }
+
+    display_energy(&moons);
 }
