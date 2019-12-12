@@ -37,6 +37,7 @@ fn read() -> Vec<Moon> {
 fn main() {
     let mut moons = read();
     let original_moons = moons.to_vec();
+    let mut cycles = (0..24).map(|_| 0).collect::<Vec<u64>>();
 
     let mut step = 0u64;
     loop {
@@ -71,11 +72,20 @@ fn main() {
         }
 
         step += 1;
+        for m_i in 0..4 {
+            let m = moons[m_i];
+            let m_o = original_moons[m_i];
+            let values = vec![(m.x, m_o.x), (m.y, m_o.y), (m.z, m_o.z),
+                              (m.vx, m_o.vx), (m.vy, m_o.vy), (m.vz, m_o.vz)];
+            for (i, (c, c_o)) in values.iter().enumerate() {
+                if cycles[6 * m_i + i] == 0 && c == c_o {
+                    cycles[6 * m_i + i] = step;
+                }
+            }
+        }
 
-        if step % 1000000 == 0 { println!("{}", step); }
-
-        if moons == original_moons { break; }
+        if cycles.iter().all(|&x| x > 0) { break; }
     }
 
-    println!("steps to repeat: {}", step);
+    println!("cycle steps: {:?}", cycles);
 }
