@@ -1,8 +1,8 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::fmt;
 use std::io;
 use std::io::prelude::*;
-
-use ncurses::*;
 
 
 #[derive(Clone, Copy)]
@@ -51,6 +51,19 @@ enum Tile {
     Block,
     HorizontalPaddle,
     Ball,
+}
+
+
+impl fmt::Display for Tile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", match self {
+            Tile::Empty => ' ',
+            Tile::Wall => '*',
+            Tile::Block => '#',
+            Tile::HorizontalPaddle => '_',
+            Tile::Ball => 'o',
+        })
+    }
 }
 
 
@@ -193,34 +206,35 @@ fn read() -> Vec<i64> {
 }
 
 
+fn goto_xy(x: i64, y: i64) {
+    print!("\x1b[{};{}H", y, x);
+}
+
+
+fn display(tiles: &HashMap<(i64, i64), Tile>, score: i64) {
+    for ((x, y), tile) in tiles.iter() {
+        goto_xy(*x, *y);
+        print!("{}", tile);
+    }
+
+    goto_xy(50, 0);
+    print!("Score: {}", score);
+}
+
+
 fn main() {
     let mut code = read();
     code[0] = 2;
     let mut program = Program::from_code(&code);
 
     let mut tiles = HashMap::new();
-
-    initscr();
-    raw();
-    keypad(stdscr(), true);
-    noecho();
-    curs_set(CURSOR_VISIBILITY::CURSOR_INVISIBLE);
-
+    let mut ball_col = -1;
+    let mut paddle_col = -1;
     let mut score = 0;
-    let mut ch;
 
+    print!("\x1b[2J");
     while program.state != State::Halted {
         program.execute();
-
-        if program.state == State::IBlock {
-            ch = getch();
-            program.input = match ch {
-                KEY_RIGHT => Some(1),
-                KEY_LEFT => Some(-1),
-                _ => Some(0),
-            };
-            program.execute();
-        }
 
         while program.state == State::OBlock {
             let x = program.output.unwrap();
@@ -247,22 +261,23 @@ fn main() {
                 };
 
                 tiles.insert((x, y), tile);
-                let tile_char = match tile {
-                    Tile::Empty => ' ',
-                    Tile::Wall => '|',
-                    Tile::Block => '#',
-                    Tile::HorizontalPaddle => '_',
-                    Tile::Ball => 'o',
-                };
-                mvaddch(y as i32, x as i32, tile_char as u32);
+                if tile == Tile::HorizontalPaddle { paddle_col = x; }
+                if tile == Tile::Ball { ball_col = x; }
             }
             program.execute();
         }
-        refresh();
 
-        // if tiles.values().filter(|&v| *v == Tile::Block).count() == 0 { break; }
+        display(&tiles, score);
+
+        if program.state == State::IBlock {
+            program.input = match ball_col.cmp(&paddle_col) {
+                Ordering::Less => Some(-1),
+                Ordering::Equal => Some(0),
+                Ordering::Greater => Some(1),
+            };
+            program.execute();
+        }
     }
 
-    endwin();
-    println!("score: {}", score);
+    goto_xy(0, 20);
 }
