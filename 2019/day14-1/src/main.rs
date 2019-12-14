@@ -2,6 +2,8 @@ use std::collections::HashMap;
 use std::io;
 use std::io::prelude::*;
 
+use counter::Counter;
+
 
 fn parse_name(desc: &str) -> String {
     let mut parts = desc.split(' ');
@@ -31,35 +33,26 @@ fn read() -> HashMap<String, (u32, HashMap<String, u32>)> {
 fn main() {
     let mut data = read();
 
-    let mut final_substitution = false;
     let (_, mut inputs) = data.remove("FUEL").unwrap();
     while inputs.len() > 1 {
-        println!("{:?}", inputs);
+        println!("inputs: {:?}", inputs);
 
-        let mut substitution = false;
-        let mut new_inputs = HashMap::new();
-        for (k, v) in inputs.drain() {
-            if k == "ORE" {
-                *new_inputs.entry(k).or_insert(0) += v;
-                continue;
-            }
+        let counts = data.iter()
+            .map(|(k, (q, si))| si.keys())
+            .flatten()
+            .collect::<Counter<_>>();
 
-            let (quant, sub_inputs) = data.get(&k).unwrap();
-            let (mut multiplier, remainder) = (v / quant, v % quant);
-            if remainder > 0 {
-                if !final_substitution && sub_inputs.contains_key("ORE") {
-                    *new_inputs.entry(k).or_insert(0) += v;
-                    continue;
-                }
-                multiplier += 1;
-            }
-            for (k_s, v_s) in sub_inputs.iter() {
-                *new_inputs.entry(k_s.to_string()).or_insert(0) += multiplier * v_s;
-                substitution = true;
-            }
+        println!("counts: {:?}", counts.most_common());
+
+        let key = inputs.keys().cloned().min_by_key(|k| counts.get(k).unwrap_or(&0)).unwrap();
+        let value = inputs.remove(&key).unwrap();
+        let (quant, sub_inputs) = data.remove(&key).unwrap();
+        let (mut multiplier, remainder) = (value / quant, value % quant);
+        if remainder > 0 { multiplier += 1; }
+
+        for (k_s, v_s) in sub_inputs.iter() {
+            *inputs.entry(k_s.to_string()).or_insert(0) += multiplier * v_s;
         }
-        inputs = new_inputs;
-        final_substitution = !substitution;
     }
 
     println!("{:?}", inputs);
