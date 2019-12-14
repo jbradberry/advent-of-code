@@ -38,13 +38,15 @@ fn main() {
         println!("inputs: {:?}", inputs);
 
         let counts = data.iter()
-            .map(|(k, (q, si))| si.keys())
+            .map(|(_, (_, si))| si.keys())
             .flatten()
             .collect::<Counter<_>>();
 
         println!("counts: {:?}", counts.most_common());
 
-        let key = inputs.keys().cloned().min_by_key(|k| counts.get(k).unwrap_or(&0)).unwrap();
+        let key = inputs.keys().cloned()
+            .filter(|k| k != "ORE")
+            .min_by_key(|k| counts.get(k).unwrap_or(&0)).unwrap();
         let value = inputs.remove(&key).unwrap();
         let (quant, sub_inputs) = data.remove(&key).unwrap();
         let (mut multiplier, remainder) = (value / quant, value % quant);
