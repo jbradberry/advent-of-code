@@ -31,20 +31,35 @@ fn read() -> HashMap<String, (u32, HashMap<String, u32>)> {
 fn main() {
     let mut data = read();
 
+    let mut final_substitution = false;
     let (_, mut inputs) = data.remove("FUEL").unwrap();
     while inputs.len() > 1 {
+        println!("{:?}", inputs);
+
+        let mut substitution = false;
         let mut new_inputs = HashMap::new();
         for (k, v) in inputs.drain() {
-            if k == "ORE" { new_inputs.insert(k, v); continue; }
+            if k == "ORE" {
+                *new_inputs.entry(k).or_insert(0) += v;
+                continue;
+            }
 
             let (quant, sub_inputs) = data.get(&k).unwrap();
             let (mut multiplier, remainder) = (v / quant, v % quant);
-            if remainder > 0 { multiplier += 1; }
+            if remainder > 0 {
+                if !final_substitution && sub_inputs.contains_key("ORE") {
+                    *new_inputs.entry(k).or_insert(0) += v;
+                    continue;
+                }
+                multiplier += 1;
+            }
             for (k_s, v_s) in sub_inputs.iter() {
                 *new_inputs.entry(k_s.to_string()).or_insert(0) += multiplier * v_s;
+                substitution = true;
             }
         }
         inputs = new_inputs;
+        final_substitution = !substitution;
     }
 
     println!("{:?}", inputs);
