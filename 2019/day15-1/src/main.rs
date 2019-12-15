@@ -250,6 +250,7 @@ fn display(visited: &HashMap<(i64, i64), Space>, robot: &Robot) {
     for y in y_min..=y_max {
         let line = (x_min..=x_max)
             .map(|x| {
+                if x == 0 && y == 0 { return 'o'; }
                 if robot.x == x && robot.y == y { return 'D'; }
                 let space = visited.get(&(x, y)).unwrap_or(&Space::Unknown);
                 match space {
@@ -261,6 +262,31 @@ fn display(visited: &HashMap<(i64, i64), Space>, robot: &Robot) {
             })
             .collect::<String>();
         println!("{}", line);
+    }
+}
+
+
+fn find_shortest_path_len(visited: &HashMap<(i64, i64), Space>) -> usize {
+    let mut dist = 0;
+    let mut last = [(0, 0)].iter().cloned().collect::<HashSet<_>>();
+    let mut checked = HashSet::new();
+
+    loop {
+        dist += 1;
+        let mut current = HashSet::new();
+        for (x, y) in &last { checked.insert((*x, *y)); }
+        for (x, y) in &last {
+            for (dx, dy) in &[(0, 1), (0, -1), (1, 0), (-1, 0)] {
+                let (nx, ny) = (x + dx, y + dy);
+                let space = visited.get(&(nx, ny)).unwrap_or(&Space::Unknown);
+                if *space == Space::OxygenSystem { return dist; }
+                if *space != Space::Wall && !checked.contains(&(nx, ny)) {
+                    current.insert((nx, ny));
+                }
+            }
+        }
+
+        last = current;
     }
 }
 
@@ -338,7 +364,8 @@ fn main() {
                 },
             }
         }
-
         display(&visited, &robot);
     }
+
+    println!("\nShortest path: {}", find_shortest_path_len(&visited));
 }
