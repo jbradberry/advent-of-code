@@ -291,7 +291,7 @@ fn main() {
         .collect::<HashSet<_>>();
     let mut path: Vec<Direction> = Vec::new();
 
-    while program.state != State::Halted {
+    while program.state != State::Halted && !unvisited.is_empty() {
         program.execute();
 
         if program.state == State::IBlock {
@@ -335,7 +335,6 @@ fn main() {
                     visited.insert((x, y), Space::OxygenSystem);
                     robot.x = x;
                     robot.y = y;
-                    break;
                 },
             }
         }
