@@ -182,6 +182,18 @@ enum Direction {
 }
 
 
+impl Direction {
+    fn reverse(&self) -> Direction {
+        match self {
+            Direction::North => Direction::South,
+            Direction::South => Direction::North,
+            Direction::West => Direction::East,
+            Direction::East => Direction::West,
+        }
+    }
+}
+
+
 enum Status {
     Collision = 0,
     Moved,
@@ -277,29 +289,29 @@ fn main() {
         .iter()
         .map(|&d| robot.movement(d))
         .collect::<HashSet<_>>();
+    let mut path: Vec<Direction> = Vec::new();
 
     while program.state != State::Halted {
         program.execute();
-        // println!("unvisited: {:?}", unvisited);
 
         if program.state == State::IBlock {
-            let mut open = Vec::new();
+            let mut adjacent = Vec::new();
             for &dir in &[Direction::North, Direction::South, Direction::West, Direction::East] {
                 let (x, y) = robot.movement(dir);
                 let space = visited.get(&(x, y)).unwrap_or(&Space::Unknown);
-                // println!("direction: {:?} ({}, {}), space: {:?}", dir, x, y, space);
                 match space {
-                    Space::Unknown => { unvisited.insert((x, y)); open.push((x, y, dir)); },
-                    Space::Empty => { open.push((x, y, dir)); },
+                    Space::Unknown => { unvisited.insert((x, y)); adjacent.push(dir); },
                     _ => {},
                 }
             }
 
-            let (_, _, dir) = open.iter()
-                .min_by_key(|(x, y, _)| {
-                    unvisited.iter().map(|(a, b)| (x - a).abs() + (y - b).abs()).min().unwrap()
-                }).unwrap();
-            direction = *dir;
+            if adjacent.is_empty() {
+                // going back the way we came, until we come up adjacent to other unknown spaces
+                direction = path.pop().unwrap().reverse();
+            } else {
+                direction = adjacent[0];
+                path.push(direction);
+            }
             program.input = Some(direction as i64);
             program.execute();
         }
@@ -312,6 +324,7 @@ fn main() {
             match status {
                 Status::Collision => {
                     visited.insert((x, y), Space::Wall);
+                    path.pop();
                 },
                 Status::Moved => {
                     visited.insert((x, y), Space::Empty);
@@ -328,6 +341,5 @@ fn main() {
         }
 
         display(&visited, &robot);
-        // println!("{:?}", visited);
     }
 }
