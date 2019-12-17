@@ -48,9 +48,9 @@ impl Program {
         self.ip += 1;
 
         let address = match mode {
-            Mode::Position => operand as usize,
+            Mode::Position => { operand as usize },
             Mode::Immediate => { return operand; },
-            Mode::Relative => { operand as usize + self.rb },
+            Mode::Relative => { (operand + self.rb as i64) as usize },
         };
 
         if address >= self.code.len() { self.code.resize(address + 1, 0); }
@@ -58,12 +58,12 @@ impl Program {
     }
 
     fn write(&mut self, value: i64, mode: Mode) {
-        let operand = self.code[self.ip] as usize;
+        let operand = self.code[self.ip];
         self.ip += 1;
 
         let address = match mode {
-            Mode::Position => { operand },
-            Mode::Relative => { operand + self.rb },
+            Mode::Position => { operand as usize },
+            Mode::Relative => { (operand + self.rb as i64) as usize },
             Mode::Immediate => panic!("Writes can only happen in position or relative mode."),
         };
 
