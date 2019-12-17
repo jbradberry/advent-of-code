@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::io;
 use std::io::prelude::*;
 
@@ -27,4 +28,21 @@ fn main() {
     }
 
     println!("{}", output);
+
+    let lines = output.split('\n')
+        .filter_map(|s| { if s.len() > 0 { Some(s.chars().collect::<Vec<_>>()) } else { None } })
+        .collect::<Vec<_>>();
+
+    let mut intersections = HashSet::new();
+    for y in 1..(lines.len() as i16 - 1) {
+        for x in 1..(lines[0].len() as i16 - 1) {
+            if [(0, 0), (0, 1), (0, -1), (1, 0), (-1, 0)].iter().all(|(a, b)| {
+                lines[(y + b) as usize][(x + a) as usize] == '#'
+            }) {
+                intersections.insert((x, y));
+            }
+        }
+    }
+
+    println!("Part 1: {}", intersections.iter().map(|(x, y)| x * y).sum::<i16>());
 }
