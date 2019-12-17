@@ -35,11 +35,11 @@ fn calculate_phase(digits: &[u8]) -> Vec<u8> {
 
 
 fn calculate_simplified_phase(digits: &[u8]) -> Vec<u8> {
-    let mut total = 0;
+    let mut total: u32 = 0;
 
     digits.iter()
         .rev()
-        .map(|d| { total += d; total % 10 })
+        .map(|&d| { total += d as u32; (total % 10) as u8 })
         .collect::<Vec<u8>>()
         .iter().cloned().rev().collect()
 }
@@ -119,7 +119,16 @@ mod tests {
     fn test_degenerate() {
         let mut data = parse_list("9876543210");
         data = calculate_simplified_phase(&data);
-
         assert_eq!(data, [5, 6, 8, 1, 5, 0, 6, 3, 1, 0]);
+
+        data = calculate_simplified_phase(&data);
+        assert_eq!(data, [5, 0, 4, 6, 5, 0, 0, 4, 1, 0]);
+    }
+
+    #[test]
+    fn test_degenerate2() {
+        let mut data = parse_list(&"9".repeat(30));  // should be enough to trigger a u8 overflow
+        data = calculate_simplified_phase(&data);
+        assert_eq!(data, parse_list("012345678901234567890123456789"));
     }
 }
