@@ -34,6 +34,17 @@ fn calculate_phase(digits: &[u8]) -> Vec<u8> {
 }
 
 
+fn calculate_simplified_phase(digits: &[u8]) -> Vec<u8> {
+    let mut total = 0;
+
+    digits.iter()
+        .rev()
+        .map(|d| { total += d; total % 10 })
+        .collect::<Vec<u8>>()
+        .iter().cloned().rev().collect()
+}
+
+
 fn main() {
     let input = read();
     let mut data = parse_list(&input);
@@ -45,14 +56,15 @@ fn main() {
     println!("Part 1: {}", data.iter().take(8).join(""));
 
     let new_input = input.repeat(10_000);
-    let offset = new_input.chars().take(7).join("").parse().unwrap();
-    data = parse_list(&new_input);
+    let offset: usize = new_input.chars().take(7).join("").parse().unwrap();
+    println!("offset: {}", offset);
+    data = parse_list(&new_input)[offset..].to_vec();
 
     for _ in 0..100 {
-        data = calculate_phase(&data);
+        data = calculate_simplified_phase(&data);
     }
 
-    println!("Part 2: {}", data.iter().skip(offset).take(8).join(""));
+    println!("Part 2: {}", data.iter().take(8).join(""));
 }
 
 
@@ -101,5 +113,13 @@ mod tests {
         }
 
         assert_eq!(data[0..8], [5, 2, 4, 3, 2, 1, 3, 3]);
+    }
+
+    #[test]
+    fn test_degenerate() {
+        let mut data = parse_list("9876543210");
+        data = calculate_simplified_phase(&data);
+
+        assert_eq!(data, [5, 6, 8, 1, 5, 0, 6, 3, 1, 0]);
     }
 }
