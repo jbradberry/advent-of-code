@@ -7,7 +7,7 @@ use itertools::Itertools;
 use intcode;
 
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Action {
     Forward,
     Left,
@@ -15,7 +15,7 @@ enum Action {
 }
 
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Direction {
     North,
     South,
@@ -168,8 +168,30 @@ fn path(scaffold: &HashSet<(usize, usize)>, robot: &mut Robot) -> Vec<Action> {
 }
 
 
-fn path_to_routine(path: Vec<Action>) -> String {
-    String::new()
+fn path_to_strings(path: &[Action]) -> Vec<String> {
+    path.iter().cloned()
+        .group_by(|a| *a)
+        .into_iter()
+        .flat_map(|(a, group)| match a {
+            Action::Forward => vec![group.count().to_string()],
+            Action::Left => group.into_iter().map(|_| "L".to_string()).collect(),
+            Action::Right => group.into_iter().map(|_| "R".to_string()).collect(),
+        })
+        .collect()
+}
+
+
+// fn path_to_routine(path: &[String]) -> Vec<String> {
+    
+// }
+
+
+fn print_path_groupings(path: &[String]) {
+    for l in 1..=20 {
+        let foo = path[..l].join(",");
+        if foo.len() > 20 { break; }
+        println!("{}", foo);
+    }
 }
 
 
@@ -210,23 +232,25 @@ fn main() {
     let mut robot = original_robot.clone();
     let p = path(&scaffold, &mut robot);
 
-    println!("Part 2: {:?}", p);
+    // println!("Part 2: {:?}", path_to_strings(&p));
+
+    print_path_groupings(&path_to_strings(&p));
 
     // let movement = solve(&lines, &intersections);
-    // let mut movement_chars = movement.chars();
+    let movement = "A,B,A,A,B,C,B,C,C,B\nL,12,R,8,L,6,R,8,L,6\nR,8,L,12,L,12,R,8\nL,6,R,6,L,12\nn\n".to_string();
+    let mut movement_chars = movement.chars();
 
-    // // let mut output = String::new();
-    // while program.state != intcode::State::Halted {
-    //     program.execute();
+    // let mut output = String::new();
+    while program.state != intcode::State::Halted {
+        program.execute();
 
-    //     if program.state == intcode::State::IBlock {
-    //         program.input = Some(movement_chars.next().unwrap() as i64);
-    //     }
+        if program.state == intcode::State::IBlock {
+            program.input = Some(movement_chars.next().unwrap() as i64);
+        }
 
-    //     if program.state == intcode::State::OBlock {
-    //         // output.push((program.output.unwrap() as u8) as char);
-    //         program.output = None;
-    //     }
-    // }
-
+        if program.state == intcode::State::OBlock {
+            println!("Part 2: {}", program.output.unwrap());
+            program.output = None;
+        }
+    }
 }
