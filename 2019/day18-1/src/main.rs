@@ -63,6 +63,17 @@ fn path_pairs(maze: &HashMap<(usize, usize), char>) -> HashMap<(char, char), u16
 }
 
 
+fn solve(maze: &HashMap<(usize, usize), char>, pairs: &HashMap<(char, char), u16>) -> u16 {
+    let chars = maze.iter()
+        .filter_map(|((x, y), c)| if *c != '.' { Some((*c, (*x, *y))) } else { None })
+        .collect::<HashMap<char, (usize, usize)>>();
+
+    let mut path = vec!['@'];
+
+    0
+}
+
+
 fn main() {
     let maze = read();
 
