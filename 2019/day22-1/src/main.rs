@@ -10,6 +10,24 @@ enum Action {
 }
 
 
+impl Action {
+    fn shuffle(&self, deck: &mut Vec<u16>) {
+        match self {
+            Action::NewStack => { deck.reverse(); },
+            Action::Cut(x) => {
+                if *x >= 0 { deck.rotate_left(*x as usize); }
+                else { deck.rotate_right(-*x as usize); }
+            },
+            Action::Deal(n) => {
+                let mut i = 0;
+                let len = deck.len();
+                deck.sort_by_key(|c| { let a = i; i += 1; a % len })
+            },
+        }
+    }
+}
+
+
 fn read() -> Vec<Action> {
     let stdin = io::stdin();
     stdin.lock().lines()
