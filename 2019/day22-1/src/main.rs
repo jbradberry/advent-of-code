@@ -21,7 +21,7 @@ impl Action {
             Action::Deal(n) => {
                 let mut i = 0;
                 let len = deck.len();
-                deck.sort_by_key(|c| { let a = i; i += 1; a % len })
+                deck.sort_by_key(|_| { let a = i; i += n; (a % len as u32) as usize })
             },
         }
     }
@@ -47,6 +47,11 @@ fn read() -> Vec<Action> {
 
 fn main() {
     let actions = read();
+    let mut deck = (0..10_007).collect::<Vec<u16>>();
 
-    println!("{:?}", actions);
+    for action in actions {
+        action.shuffle(&mut deck);
+    }
+
+    println!("{:?}", deck);
 }
