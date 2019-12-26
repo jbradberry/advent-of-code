@@ -53,5 +53,6 @@ fn main() {
         action.shuffle(&mut deck);
     }
 
-    println!("{:?}", deck);
+    let position = deck.iter().position(|&x| x == 2019).unwrap();
+    println!("position of card 2019: {}", position);
 }
