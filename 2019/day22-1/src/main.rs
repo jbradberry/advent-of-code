@@ -5,13 +5,13 @@ use std::io::prelude::*;
 #[derive(Debug)]
 enum Action {
     NewStack,
-    Deal(u32),
+    Deal(usize),
     Cut(i32),
 }
 
 
 impl Action {
-    fn shuffle(&self, deck: &mut Vec<u16>) {
+    fn shuffle(&self, deck: &mut Vec<u32>) {
         match self {
             Action::NewStack => { deck.reverse(); },
             Action::Cut(x) => {
@@ -19,9 +19,12 @@ impl Action {
                 else { deck.rotate_right(-*x as usize); }
             },
             Action::Deal(n) => {
-                let mut i = 0;
                 let len = deck.len();
-                deck.sort_by_key(|_| { let a = i; i += n; (a % len as u32) as usize })
+                let mut new_deck = Vec::new();
+                new_deck.resize(len, None);
+
+                for (i, c) in deck.iter().enumerate() { new_deck[(i * n) % len] = Some(*c); }
+                for (i, c) in new_deck.iter().enumerate() { deck[i] = c.unwrap(); }
             },
         }
     }
@@ -47,7 +50,7 @@ fn read() -> Vec<Action> {
 
 fn main() {
     let actions = read();
-    let mut deck = (0..10_007).collect::<Vec<u16>>();
+    let mut deck = (0..10_007).collect::<Vec<u32>>();
 
     for action in actions {
         action.shuffle(&mut deck);
