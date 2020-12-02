@@ -4,7 +4,7 @@ use std::io::prelude::*;
 use regex::Regex;
 
 
-fn read() -> Vec<(u8, u8, String, String)> {
+fn read() -> Vec<(usize, usize, String, String)> {
     let re = Regex::new(r"^(\d+)-(\d+) (\w): (\w+)$").unwrap();
     let stdin = io::stdin();
 
@@ -25,5 +25,12 @@ fn read() -> Vec<(u8, u8, String, String)> {
 fn main() {
     let passwords = read();
 
-    println!("{:?}", passwords);
+    let valid = passwords.iter()
+        .filter(|(lower, upper, c, password)| {
+            let count = password.matches(c.as_str()).count();
+            lower <= &count && &count <= upper
+        })
+        .count();
+
+    println!("{} valid passwords", valid);
 }
