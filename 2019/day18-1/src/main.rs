@@ -63,14 +63,27 @@ fn path_pairs(maze: &HashMap<(usize, usize), char>) -> HashMap<(char, char), u16
 }
 
 
+fn solve_step(
+    pairs: &HashMap<(char, char), u16>, keys: &HashSet<char>, path: &[char], dist: u16
+) -> (Vec<char>, u16) {
+    let last = path.last().unwrap();
+    let mut options = pairs.keys().filter(|(k0, k1)| k0 == last).collect::<Vec<_>>();
+
+    if last.is_ascii_lowercase() {}
+
+    (Vec::new(), 0)
+}
+
+
 fn solve(maze: &HashMap<(usize, usize), char>, pairs: &HashMap<(char, char), u16>) -> u16 {
     let chars = maze.iter()
         .filter_map(|((x, y), c)| if *c != '.' { Some((*c, (*x, *y))) } else { None })
         .collect::<HashMap<char, (usize, usize)>>();
+    let keys = chars.keys().cloned().filter(|k| k.is_ascii_lowercase()).collect::<HashSet<_>>();
 
-    let mut path = vec!['@'];
+    let path = vec!['@'];
 
-    0
+    solve_step(pairs, &keys, &path, 0).1
 }
 
 
@@ -83,4 +96,6 @@ fn main() {
     let segments = path_pairs(&maze);
 
     println!("{:?}", segments);
+
+    solve(&maze, &segments);
 }
