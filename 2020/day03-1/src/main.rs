@@ -14,5 +14,9 @@ fn read() -> Vec<Vec<char>> {
 fn main() {
     let map = read();
 
-    println!("{:?}", map);
+    let trees = (0..map.len())
+        .filter(|r| map[*r][(3 * r) % map[0].len()] == '#')
+        .count();
+
+    println!("number of trees hit: {}", trees);
 }
