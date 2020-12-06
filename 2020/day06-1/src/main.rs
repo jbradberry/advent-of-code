@@ -17,5 +17,7 @@ fn read() -> Vec<HashSet<char>> {
 fn main() {
     let answers = read();
 
-    println!("{:?}", answers);
+    let sum: usize = answers.iter().map(|a| a.len()).sum();
+
+    println!("sum: {}", sum);
 }
