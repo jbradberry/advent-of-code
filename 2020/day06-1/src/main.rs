@@ -1,15 +1,13 @@
 use std::io;
 use std::io::prelude::*;
 
-use std::collections::HashSet;
 
-
-fn read() -> Vec<HashSet<char>> {
+fn read() -> Vec<Vec<String>> {
     let mut buffer = String::new();
     io::stdin().read_to_string(&mut buffer).unwrap();
 
     buffer.split("\n\n")
-        .map(|s| s.chars().filter(|&c| c != '\n').collect())
+        .map(|g| g.lines().map(String::from).collect())
         .collect()
 }
 
@@ -17,7 +15,13 @@ fn read() -> Vec<HashSet<char>> {
 fn main() {
     let answers = read();
 
-    let sum: usize = answers.iter().map(|a| a.len()).sum();
+    let sum: usize = answers.iter()
+        .map(|g| {
+            ('a'..='z')
+                .filter(|&c| g.iter().any(|s| s.contains(c)))
+                .count()
+        })
+        .sum();
 
     println!("sum: {}", sum);
 }
