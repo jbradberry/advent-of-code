@@ -2,6 +2,8 @@ use std::io;
 use std::io::prelude::*;
 use std::str::FromStr;
 
+use std::collections::HashSet;
+
 
 #[derive(Debug, PartialEq)]
 enum OpCode {
@@ -49,5 +51,24 @@ fn read() -> Vec<Instruction> {
 fn main() {
     let program = read();
 
-    println!("{:?}", program);
+    let mut acc: i32 = 0;
+    let mut ip: usize = 0;
+    let mut visited = HashSet::new();
+
+    loop {
+        if visited.contains(&ip) { break; }
+        visited.insert(ip);
+
+        match program[ip] {
+            Instruction { opcode: OpCode::NoOp, .. } => {},
+            Instruction { opcode: OpCode::Accumulate, value: x } => { acc += x; },
+            Instruction { opcode: OpCode::Jump, value: x } => {
+                ip = ((ip as i32) + x) as usize;
+                continue;
+            },
+        }
+        ip += 1;
+    }
+
+    println!("accumulator: {}", acc);
 }
