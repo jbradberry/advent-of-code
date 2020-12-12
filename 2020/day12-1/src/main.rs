@@ -15,10 +15,49 @@ enum Direction {
 }
 
 
+impl Direction {
+    fn left(&self, value: i32) -> Self {
+        let mut n = value;
+        let mut dir = self;
+
+        while n > 0 {
+            dir = match dir {
+                Direction::North => &Direction::West,
+                Direction::West => &Direction::South,
+                Direction::South => &Direction::East,
+                Direction::East => &Direction::North,
+                _ => unreachable!(),
+            };
+            n -= 90;
+        }
+
+        *dir
+    }
+
+    fn right(&self, value: i32) -> Self {
+        let mut n = value;
+        let mut dir = self;
+
+        while n > 0 {
+            dir = match dir {
+                Direction::North => &Direction::East,
+                Direction::East => &Direction::South,
+                Direction::South => &Direction::West,
+                Direction::West => &Direction::North,
+                _ => unreachable!(),
+            };
+            n -= 90;
+        }
+
+        *dir
+    }
+}
+
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct Action {
     direction: Direction,
-    value: u16,
+    value: i32,
 }
 
 
@@ -52,6 +91,29 @@ fn read() -> Vec<Action> {
 
 fn main() {
     let actions = read();
+    let mut ship_direction = Direction::East;
+    let (mut east, mut north) = (0i32, 0i32);
 
-    println!("{:?}", actions);
+    for Action { direction, value } in actions {
+        match direction {
+            Direction::North => { north += value; },
+            Direction::South => { north -= value; },
+            Direction::East => { east += value; },
+            Direction::West => { east -= value; },
+            Direction::Left => { ship_direction = ship_direction.left(value); },
+            Direction::Right => { ship_direction = ship_direction.right(value); },
+            Direction::Forward => {
+                match ship_direction {
+                    Direction::North => { north += value; },
+                    Direction::South => { north -= value; },
+                    Direction::East => { east += value; },
+                    Direction::West => { east -= value; },
+                    _ => unreachable!(),
+                }
+            },
+        }
+    }
+
+    println!("north: {}, east: {}", north, east);
+    println!("Manhattan distance: {}", north.abs() + east.abs());
 }
