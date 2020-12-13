@@ -2,7 +2,7 @@ use std::io;
 use std::io::prelude::*;
 
 
-fn read() -> (u32, Vec<u32>) {
+fn read() -> (u64, Vec<u64>) {
     let stdin = io::stdin();
     let mut lines = stdin.lock().lines().map(|s| s.unwrap());
 
@@ -18,5 +18,9 @@ fn read() -> (u32, Vec<u32>) {
 fn main() {
     let (earliest, buses) = read();
 
+    let (min_wait, min_bus) = buses.iter().map(|&b| (b - earliest % b, b)).min().unwrap();
+
     println!("earliest: {}, buses: {:?}", earliest, buses);
+    println!("least wait time: {}, bus #: {}", min_wait, min_bus);
+    println!("solution: {}", min_wait as u64 * min_bus);
 }
