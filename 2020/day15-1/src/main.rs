@@ -32,6 +32,8 @@ fn main() {
 
         // println!("turn: {}, number: {}", counter, last);
 
-        if counter >= 10 { break; }
+        if counter >= 2020 { break; }
     }
+
+    println!("number 2020: {}", last);
 }
