@@ -53,5 +53,13 @@ fn main() {
         })
         .collect();
 
-    println!("valid: {:?}", valid);
+    for i in 0..valid[0].len() {
+        println!("field {}:", i);
+        for (name, field) in &constraints {
+            let confirmed = valid.iter()
+                .map(|t| t[i])
+                .all(|v| { field.iter().any(|r| r.contains(&v)) });
+            if confirmed { println!("  {}", name); }
+        }
+    }
 }
