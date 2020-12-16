@@ -43,6 +43,15 @@ fn read() -> (HashMap<String, Vec<RangeInclusive<u16>>>, Vec<Vec<u16>>) {
 fn main() {
     let (constraints, tickets) = read();
 
-    println!("constraints: {:?}", constraints);
-    println!("tickets: {:?}", tickets);
+    let invalid: Vec<u16> = tickets.into_iter()
+        .flat_map(|t| {
+            t.into_iter()
+                .filter(|v| {
+                    !constraints.values()
+                        .any(|field| { field.iter().any(|r| r.contains(v)) })
+                })
+        })
+        .collect();
+
+    println!("scanning error rate: {}", invalid.iter().sum::<u16>());
 }
