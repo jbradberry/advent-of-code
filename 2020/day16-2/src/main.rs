@@ -1,7 +1,7 @@
 use std::io;
 use std::io::prelude::*;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ops::RangeInclusive;
 
 use regex::Regex;
@@ -53,13 +53,38 @@ fn main() {
         })
         .collect();
 
+    let mut by_pos: HashMap<usize, HashSet<String>> = HashMap::new();
+
     for i in 0..valid[0].len() {
-        println!("field {}:", i);
         for (name, field) in &constraints {
             let confirmed = valid.iter()
                 .map(|t| t[i])
                 .all(|v| { field.iter().any(|r| r.contains(&v)) });
-            if confirmed { println!("  {}", name); }
+            if confirmed {
+                by_pos.entry(i).or_insert(HashSet::new()).insert(name.to_string());
+            }
         }
     }
+
+    let mut solution: HashMap<usize, String> = HashMap::new();
+
+    loop {
+        let resolved = by_pos.iter()
+            .filter(|(_, v)| v.len() == 1)
+            .map(|(k, v)| (*k, v.iter().next().unwrap().to_string()))
+            .collect::<Vec<(usize, String)>>();
+
+        for (k, v) in &resolved { solution.insert(*k, v.to_string()); }
+        for (k, _) in &resolved { by_pos.remove(k); }
+
+        if by_pos.is_empty() { break; }
+
+        for (_, fields) in by_pos.iter_mut() {
+            for (_, v) in &resolved {
+                fields.remove(v);
+            }
+        }
+    }
+
+    println!("solution: {:?}", solution);
 }
