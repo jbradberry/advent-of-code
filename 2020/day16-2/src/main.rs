@@ -7,7 +7,7 @@ use std::ops::RangeInclusive;
 use regex::Regex;
 
 
-fn read() -> (HashMap<String, Vec<RangeInclusive<u16>>>, Vec<Vec<u16>>) {
+fn read() -> (HashMap<String, Vec<RangeInclusive<u64>>>, Vec<Vec<u64>>) {
     let field_re = Regex::new(r"^([[:alpha:] ]+): (\d+-\d+(?: or \d+-\d+)*)$").unwrap();
     let mut constraints = HashMap::new();
     let mut tickets = Vec::new();
@@ -43,7 +43,7 @@ fn read() -> (HashMap<String, Vec<RangeInclusive<u16>>>, Vec<Vec<u16>>) {
 fn main() {
     let (constraints, tickets) = read();
 
-    let valid: Vec<Vec<u16>> = tickets.into_iter()
+    let valid: Vec<Vec<u64>> = tickets.into_iter()
         .filter(|t| {
             t.iter()
                 .all(|v| {
@@ -86,5 +86,9 @@ fn main() {
         }
     }
 
-    println!("solution: {:?}", solution);
+    let mul = solution.iter()
+        .filter(|(_, v)| v.starts_with("departure"))
+        .map(|(k, _)| valid[0][*k])
+        .product::<u64>();
+    println!("solution: {}", mul);
 }
