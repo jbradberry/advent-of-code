@@ -85,84 +85,52 @@ fn path_pairs(map: &Vec<Vec<Space>>) -> HashMap<char, HashMap<char, usize>> {
 }
 
 
-fn reachable_keys(pairs: &HashMap<char, HashMap<char, usize>>,
-                  path: &[char], dist: usize) -> Vec<(Vec<char>, usize)> {
-    let mut results = Vec::new();
-    let mut found = HashMap::new();
-    let endpoint = path.iter().last().unwrap();
+fn solve(pairs: &HashMap<char, HashMap<char, usize>>) -> Option<usize> {
+    let all_keys = pairs.keys()
+        .filter(|k| k.is_ascii_lowercase())
+        .fold(0, |acc, k| acc | (1 << (k.to_digit(36).unwrap() - 10)));
+    let mut distances = HashMap::new();
+    distances.insert(('@', 0), 0);
+
     let mut queue = VecDeque::new();
-    queue.push_back((vec![*endpoint], dist));
-
-    while let Some((curr_path, curr_dist)) = queue.pop_front() {
-        let curr_end = curr_path.iter().last().unwrap();
-
-        for (conn, delta) in &pairs[curr_end] {
-            if curr_path.contains(&conn) { continue; }
-            if conn.is_ascii_uppercase() && !path.contains(&conn.to_ascii_lowercase()) { continue; }
-
-            let mut new_path = curr_path.to_vec();
-            new_path.push(*conn);
-
-            if conn.is_ascii_lowercase() && !path.contains(&conn) {
-                if found.contains_key(conn) && found[conn] <= curr_dist + delta { continue; }
-
-                let mut total_path = path.to_vec();
-                total_path.extend(new_path[1..].iter().copied());
-                results.push((total_path, curr_dist + delta));
-                found.insert(conn, curr_dist + delta);
-            } else {
-                queue.push_back((new_path, curr_dist + delta));
-            }
-        }
-    }
-
-    results.sort_by_key(|t| -(t.1 as i64));
-    results
-}
-
-
-fn solve(pairs: &HashMap<char, HashMap<char, usize>>) -> Option<(Vec<char>, usize)> {
-    let mut queue = Vec::new();
-    queue.push((vec!['@'], 0));
+    queue.push_back(('@', 0));
     let mut solution = None;
 
-    while let Some((path, distance)) = queue.pop() {
-        println!("{} {:?}", distance, path);
-        if let Some((_, dst)) = solution {
+    while let Some((node, keys)) = queue.pop_front() {
+        let distance = distances[&(node, keys)];
+
+        if let Some(dst) = solution {
             if distance >= dst { continue; }
         }
 
-        for (new_path, new_dist) in reachable_keys(pairs, &path, distance) {
-            // println!("{:?}", new_path);
-
-            // if we have a solution already:
-            //   if this is a solution and is better, replace
-            //   otherwise:
-            //     if it is already greater than the existing solution, ignore
-            //     otherwise, push to queue
-            // otherwise:
-            //   if this is a solution, store
-            //   otherwise, push to queue
-
-            let remaining_keys = pairs.keys()
-                .filter(|k| k.is_ascii_lowercase() && !new_path.contains(k))
-                .count();
-
-            if let Some((_, dst)) = solution {
-                if remaining_keys == 0 && new_dist < dst {
-                    solution = Some((new_path, new_dist));
-                    continue;
-                }
-
-                if new_dist >= dst { continue; }
+        for (next_node, delta) in &pairs[&node] {
+            if let Some(dst) = solution {
+                if distance + delta >= dst { continue; }
             }
 
-            if remaining_keys == 0 {
-                solution = Some((new_path, new_dist));
-                continue;
+            let mut next_keys = keys;
+            if next_node.is_ascii_lowercase() {
+                next_keys |= 1 << (next_node.to_digit(36).unwrap() - 10);
             }
 
-            queue.push((new_path, new_dist));
+            match distances.get(&(*next_node, next_keys)) {
+                Some(dst) => {
+                    if distance + delta < *dst {
+                        distances.insert((*next_node, next_keys), distance + delta);
+                    } else {
+                        continue;
+                    }
+                },
+                None => {
+                    distances.insert((*next_node, next_keys), distance + delta);
+                },
+            }
+
+            if next_keys == all_keys {
+                solution = Some(distance + delta);
+            } else {
+                queue.push_back((*next_node, next_keys));
+            }
         }
     }
 
@@ -178,7 +146,7 @@ fn main() {
     let segments = path_pairs(&maze);
     // println!("segments: {:?}", segments);
 
-    let (solution, dist) = solve(&segments).unwrap();
-    println!("solution: {:?}", solution);
+    let dist = solve(&segments).unwrap();
+    // println!("solution: {:?}", solution);
     println!("distance: {}", dist);
 }
