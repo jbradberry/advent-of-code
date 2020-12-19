@@ -108,6 +108,10 @@ fn solve(pairs: &HashMap<char, HashMap<char, usize>>) -> Option<usize> {
                 if distance + delta >= dst { continue; }
             }
 
+            if next_node.is_ascii_uppercase() {
+                if (1 << (next_node.to_digit(36).unwrap() - 10)) & keys == 0 { continue; }
+            }
+
             let mut next_keys = keys;
             if next_node.is_ascii_lowercase() {
                 next_keys |= 1 << (next_node.to_digit(36).unwrap() - 10);
