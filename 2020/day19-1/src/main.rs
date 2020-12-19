@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io;
 use std::io::prelude::*;
 
@@ -49,7 +49,6 @@ fn resolve_rule(rules: &HashMap<u16, String>, index: u16) -> Option<Vec<String>>
                                 .map(|x| resolve_rule(rules, x.parse().unwrap()).unwrap())
                                 .multi_cartesian_product()
                                 .map(|v| v.iter().join(""))
-                                .collect::<Vec<String>>()
                         })
                         .collect();
                     Some(results)
@@ -64,7 +63,10 @@ fn resolve_rule(rules: &HashMap<u16, String>, index: u16) -> Option<Vec<String>>
 fn main() {
     let (rules, messages) = read();
 
-    let zero = resolve_rule(&rules, 0).unwrap();
+    let zero = resolve_rule(&rules, 0).unwrap().into_iter().collect::<HashSet<String>>();
+    let count = messages.iter()
+        .filter(|m| zero.contains(m.as_str()))
+        .count();
 
-    println!("zero rule: {:?}", zero);
+    println!("valid messages: {}", count);
 }
