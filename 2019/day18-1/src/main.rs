@@ -116,18 +116,22 @@ fn reachable_keys(pairs: &HashMap<char, HashMap<char, usize>>,
         }
     }
 
-    results.sort_by_key(|t| t.1);
+    results.sort_by_key(|t| -(t.1 as i64));
     results
 }
 
 
 fn solve(pairs: &HashMap<char, HashMap<char, usize>>) -> Option<(Vec<char>, usize)> {
-    let mut queue = VecDeque::new();
-    queue.push_back((vec!['@'], 0));
+    let mut queue = Vec::new();
+    queue.push((vec!['@'], 0));
     let mut solution = None;
 
-    while let Some((path, distance)) = queue.pop_front() {
-        // println!("{:?}", path);
+    while let Some((path, distance)) = queue.pop() {
+        println!("{} {:?}", distance, path);
+        if let Some((_, dst)) = solution {
+            if distance >= dst { continue; }
+        }
+
         for (new_path, new_dist) in reachable_keys(pairs, &path, distance) {
             // println!("{:?}", new_path);
 
@@ -158,7 +162,7 @@ fn solve(pairs: &HashMap<char, HashMap<char, usize>>) -> Option<(Vec<char>, usiz
                 continue;
             }
 
-            queue.push_back((new_path, new_dist));
+            queue.push((new_path, new_dist));
         }
     }
 
