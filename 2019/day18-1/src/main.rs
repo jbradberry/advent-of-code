@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::io;
 use std::io::prelude::*;
 
@@ -32,9 +32,9 @@ fn read() -> Vec<Vec<Space>> {
 }
 
 
-fn nearest_items(map: &Vec<Vec<Space>>, r: usize, c: usize) -> HashSet<(char, usize)> {
+fn nearest_items(map: &Vec<Vec<Space>>, r: usize, c: usize) -> HashMap<char, usize> {
     let mut steps = 0;
-    let mut found = HashSet::new();
+    let mut found = HashMap::new();
     let mut explored: HashSet<(usize, usize)> = HashSet::new();
     let mut prev = HashSet::new();
     prev.insert((r, c));
@@ -53,8 +53,8 @@ fn nearest_items(map: &Vec<Vec<Space>>, r: usize, c: usize) -> HashSet<(char, us
                 match map[x][y] {
                     Space::Wall => { continue; },
                     Space::Open => {},
-                    Space::Explorer => { found.insert(('@', steps)); continue; },
-                    Space::Key(v) | Space::Door(v) => { found.insert((v, steps)); continue; },
+                    Space::Explorer => { found.entry('@').or_insert(steps); continue; },
+                    Space::Key(v) | Space::Door(v) => { found.entry(v).or_insert(steps); continue; },
                 }
 
                 curr.insert((x, y));
@@ -67,7 +67,7 @@ fn nearest_items(map: &Vec<Vec<Space>>, r: usize, c: usize) -> HashSet<(char, us
 }
 
 
-fn path_pairs(map: &Vec<Vec<Space>>) -> HashMap<char, Vec<(char, usize)>> {
+fn path_pairs(map: &Vec<Vec<Space>>) -> HashMap<char, HashMap<char, usize>> {
     map.iter().enumerate()
         .flat_map(|(i, r)| {
             r.iter().enumerate()
@@ -78,50 +78,103 @@ fn path_pairs(map: &Vec<Vec<Space>>) -> HashMap<char, Vec<(char, usize)>> {
                         Space::Key(value) | Space::Door(value) => *value,
                         _ => unreachable!(),
                     };
-                    (ch, nearest_items(map, i, j).into_iter().collect())
+                    (ch, nearest_items(map, i, j))
                 })
         })
         .collect()
 }
 
 
-// fn solve_step(
-//     pairs: &HashMap<(char, char), u16>, keys: &HashSet<char>, path: &[char], dist: u16
-// ) -> (Vec<char>, u16) {
-//     let last = path.last().unwrap();
-//     let mut options = pairs.keys().filter(|(k0, k1)| k0 == last).collect::<Vec<_>>();
+fn reachable_keys(pairs: &HashMap<char, HashMap<char, usize>>,
+                  path: &[char], dist: usize) -> Vec<(Vec<char>, usize)> {
+    let mut results = Vec::new();
+    let mut found = HashMap::new();
+    let endpoint = path.iter().last().unwrap();
+    let mut queue = VecDeque::new();
+    queue.push_back((vec![*endpoint], dist));
 
-//     if last.is_ascii_lowercase() {}
+    while let Some((curr_path, curr_dist)) = queue.pop_front() {
+        let curr_end = curr_path.iter().last().unwrap();
 
-//     (Vec::new(), 0)
-// }
+        for (conn, delta) in &pairs[curr_end] {
+            if curr_path.contains(&conn) { continue; }
+            if conn.is_ascii_uppercase() && !path.contains(&conn.to_ascii_lowercase()) { continue; }
+
+            let mut new_path = curr_path.to_vec();
+            new_path.push(*conn);
+
+            if conn.is_ascii_lowercase() && !path.contains(&conn) {
+                if found.contains_key(conn) && found[conn] <= curr_dist + delta { continue; }
+
+                let mut total_path = path.to_vec();
+                total_path.extend(new_path[1..].iter().copied());
+                results.push((total_path, curr_dist + delta));
+                found.insert(conn, curr_dist + delta);
+            } else {
+                queue.push_back((new_path, curr_dist + delta));
+            }
+        }
+    }
+
+    results.sort_by_key(|t| t.1);
+    results
+}
 
 
-// fn solve(maze: &HashMap<(usize, usize), char>, pairs: &HashMap<(char, char), u16>) -> u16 {
-//     let chars = maze.iter()
-//         .filter_map(|((x, y), c)| if *c != '.' { Some((*c, (*x, *y))) } else { None })
-//         .collect::<HashMap<char, (usize, usize)>>();
-//     let keys = chars.keys().cloned().filter(|k| k.is_ascii_lowercase()).collect::<HashSet<_>>();
+fn solve(pairs: &HashMap<char, HashMap<char, usize>>) -> Option<(Vec<char>, usize)> {
+    let mut queue = VecDeque::new();
+    queue.push_back((vec!['@'], 0));
+    let mut solution = None;
 
-//     let path = vec!['@'];
+    while let Some((path, distance)) = queue.pop_front() {
+        // println!("{:?}", path);
+        for (new_path, new_dist) in reachable_keys(pairs, &path, distance) {
+            // println!("{:?}", new_path);
 
-//     solve_step(pairs, &keys, &path, 0).1
-// }
+            // if we have a solution already:
+            //   if this is a solution and is better, replace
+            //   otherwise:
+            //     if it is already greater than the existing solution, ignore
+            //     otherwise, push to queue
+            // otherwise:
+            //   if this is a solution, store
+            //   otherwise, push to queue
 
+            let remaining_keys = pairs.keys()
+                .filter(|k| k.is_ascii_lowercase() && !new_path.contains(k))
+                .count();
 
-fn solve(pairs: &HashMap<char, Vec<(char, usize)>>) -> Vec<(usize, char, char)> {
-    Vec::new()
+            if let Some((_, dst)) = solution {
+                if remaining_keys == 0 && new_dist < dst {
+                    solution = Some((new_path, new_dist));
+                    continue;
+                }
+
+                if new_dist >= dst { continue; }
+            }
+
+            if remaining_keys == 0 {
+                solution = Some((new_path, new_dist));
+                continue;
+            }
+
+            queue.push_back((new_path, new_dist));
+        }
+    }
+
+    solution
 }
 
 
 fn main() {
     let maze = read();
-
-    println!("{:?}", maze);
+    // println!("{:?}", maze);
     println!("size: {} * {}", maze.len(), maze[0].len());
 
     let segments = path_pairs(&maze);
-    println!("{:?}", segments);
+    // println!("segments: {:?}", segments);
 
-    // solve(&segments);
+    let (solution, dist) = solve(&segments).unwrap();
+    println!("solution: {:?}", solution);
+    println!("distance: {}", dist);
 }
