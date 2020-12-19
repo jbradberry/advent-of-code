@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::io;
 use std::io::prelude::*;
 
+use itertools::Itertools;
 use regex::Regex;
 
 
@@ -33,9 +34,37 @@ fn read() -> (HashMap<u16, String>, Vec<String>) {
 }
 
 
+fn resolve_rule(rules: &HashMap<u16, String>, index: u16) -> Option<Vec<String>> {
+    let rule = rules.get(&index);
+
+    match rule {
+        None => None,
+        Some(r) => {
+            match r.chars().next().unwrap() {
+                'a'..='z' => { Some(vec![r.to_string()]) },
+                '0'..='9' => {
+                    let results = r.split(" | ")
+                        .flat_map(|opt| {
+                            opt.split_whitespace()
+                                .map(|x| resolve_rule(rules, x.parse().unwrap()).unwrap())
+                                .multi_cartesian_product()
+                                .map(|v| v.iter().join(""))
+                                .collect::<Vec<String>>()
+                        })
+                        .collect();
+                    Some(results)
+                },
+                _ => panic!(),
+            }
+        }
+    }
+}
+
+
 fn main() {
     let (rules, messages) = read();
 
-    println!("rules: {:?}", rules);
-    println!("messages: {:?}", messages);
+    let zero = resolve_rule(&rules, 0).unwrap();
+
+    println!("zero rule: {:?}", zero);
 }
