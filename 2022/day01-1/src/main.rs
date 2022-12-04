@@ -26,5 +26,7 @@ fn read() -> Vec<Vec<u32>> {
 fn main() {
     let supplies = read();
 
-    println!("supplies: {:?}", supplies);
+    let max_cals = supplies.iter().map(|v| v.iter().sum::<u32>()).max();
+
+    println!("maximum calories: {}", max_cals.unwrap());
 }
