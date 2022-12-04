@@ -22,8 +22,19 @@ fn read() -> Vec<(u16, u16, u16, u16)> {
 }
 
 
+fn full_overlap(x: &(u16, u16, u16, u16)) -> bool {
+    if (x.0 <= x.2) && (x.1 >= x.3) { return true }
+    if (x.2 <= x.0) && (x.3 >= x.1) { return true }
+    false
+}
+
+
 fn main() {
     let assignments = read();
 
-    println!("assignments: {:?}", assignments);
+    let overlaps = assignments.into_iter()
+        .filter(full_overlap)
+        .count();
+
+    println!("overlaps: {}", overlaps);
 }
