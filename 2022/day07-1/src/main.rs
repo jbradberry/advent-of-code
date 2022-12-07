@@ -51,16 +51,20 @@ fn read() -> HashMap<String, Vec<FSObject>> {
 }
 
 
-fn path_size(fs: &HashMap<String, Vec<FSObject>>, path: &str) -> u64 {
-    fs.get(path).unwrap()
+fn path_size(fs: &HashMap<String, Vec<FSObject>>, fs_sizes: &mut HashMap<String, u64>, path: &str) -> u64 {
+    let size = fs.get(path).unwrap()
         .iter()
         .map(|x| {
             match x {
-                FSObject::Dir(d) => path_size(fs, &(path.to_owned() + d + "/")),
+                FSObject::Dir(d) => path_size(fs, fs_sizes, &(path.to_string() + d + "/")),
                 FSObject::File(_, s) => *s
             }
         })
-        .sum::<u64>()
+        .sum::<u64>();
+
+    fs_sizes.insert(path.to_string(), size);
+
+    size
 }
 
 
@@ -69,5 +73,15 @@ fn main() {
 
     println!("fs: {:?}", fs);
 
-    println!("size: {}", path_size(&fs, "/"));
+    let mut fs_sizes = HashMap::new();
+
+    println!("total size: {}", path_size(&fs, &mut fs_sizes, "/"));
+    // println!("sizes: {:?}", fs_sizes);
+
+    let small_size = fs_sizes.iter()
+        .map(|(_, v)| v)
+        .filter(|v| **v <= 100000)
+        .sum::<u64>();
+
+    println!("total size of small dirs: {}", small_size);
 }
