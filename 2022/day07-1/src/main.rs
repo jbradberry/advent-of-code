@@ -20,16 +20,18 @@ fn read() -> HashMap<String, Vec<FSObject>> {
         let line = l.unwrap();
         let tokens = line.split_whitespace().collect::<Vec<_>>();
 
+        println!("line: {}", line);
+
         if tokens[0] == "$" {
             if tokens[1] == "cd" {
                 match tokens[2] {
                     "/" => { current = "/".to_string(); },
                     ".." => {
+                        println!("current: {}", current);
                         current = current
                             .trim_end_matches('/')
                             .rsplit_once('/').unwrap()
-                            .0.to_string();
-                        if current == "" { current = "/".to_string(); }
+                            .0.to_string() + "/";
                     },
                     _ => { current = current + tokens[2] + "/"; }
                 }
