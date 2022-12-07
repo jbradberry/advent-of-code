@@ -20,14 +20,11 @@ fn read() -> HashMap<String, Vec<FSObject>> {
         let line = l.unwrap();
         let tokens = line.split_whitespace().collect::<Vec<_>>();
 
-        println!("line: {}", line);
-
         if tokens[0] == "$" {
             if tokens[1] == "cd" {
                 match tokens[2] {
                     "/" => { current = "/".to_string(); },
                     ".." => {
-                        println!("current: {}", current);
                         current = current
                             .trim_end_matches('/')
                             .rsplit_once('/').unwrap()
@@ -54,8 +51,23 @@ fn read() -> HashMap<String, Vec<FSObject>> {
 }
 
 
+fn path_size(fs: &HashMap<String, Vec<FSObject>>, path: &str) -> u64 {
+    fs.get(path).unwrap()
+        .iter()
+        .map(|x| {
+            match x {
+                FSObject::Dir(d) => path_size(fs, &(path.to_owned() + d + "/")),
+                FSObject::File(_, s) => *s
+            }
+        })
+        .sum::<u64>()
+}
+
+
 fn main() {
     let fs = read();
 
     println!("fs: {:?}", fs);
+
+    println!("size: {}", path_size(&fs, "/"));
 }
