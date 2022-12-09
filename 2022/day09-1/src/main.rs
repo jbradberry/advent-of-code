@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use std::io;
 use std::io::prelude::*;
 
@@ -37,6 +39,9 @@ fn main() {
     let mut head: (i16, i16) = (0, 0);
     let mut tail: (i16, i16) = (0, 0);
 
+    let mut visited = HashSet::new();
+    visited.insert((0, 0));
+
     for (mv, inc) in moves {
         for _ in 0..inc {
             match mv {
@@ -73,9 +78,11 @@ fn main() {
                     }
                 },
             };
+            visited.insert(tail);
             println!("head: {:?}, tail: {:?}", head, tail);
         }
     }
 
     // println!("head: {:?}, tail: {:?}", head, tail);
+    println!("visited: {}", visited.len());
 }
