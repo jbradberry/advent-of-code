@@ -33,4 +33,20 @@ fn main() {
     let moves = read();
 
     println!("moves: {:?}", moves);
+
+    let mut head: (i16, i16) = (0, 0);
+    let mut tail: (i16, i16) = (0, 0);
+
+    for mv in moves {
+        head = match mv {
+            Move::Up(x) => (head.0, head.1 + x as i16),
+            Move::Down(x) => (head.0, head.1 - x as i16),
+            Move::Left(x) => (head.0 - x as i16, head.1),
+            Move::Right(x) => (head.0 + x as i16, head.1),
+        };
+
+        println!("head: {:?}", head);
+    }
+
+    println!("head: {:?}, tail: {:?}", head, tail);
 }
