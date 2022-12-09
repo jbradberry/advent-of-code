@@ -4,24 +4,24 @@ use std::io::prelude::*;
 
 #[derive(Debug)]
 enum Move {
-    Up(u8),
-    Down(u8),
-    Left(u8),
-    Right(u8),
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
 
-fn read() -> Vec<Move> {
+fn read() -> Vec<(Move, u8)> {
     let stdin = io::stdin();
     stdin.lock().lines()
         .map(|x| {
             let line = x.unwrap();
             let split = line.split(" ").collect::<Vec<_>>();
             match split[0] {
-                "U" => Move::Up(split[1].parse().unwrap()),
-                "D" => Move::Down(split[1].parse().unwrap()),
-                "L" => Move::Left(split[1].parse().unwrap()),
-                "R" => Move::Right(split[1].parse().unwrap()),
+                "U" => (Move::Up, split[1].parse().unwrap()),
+                "D" => (Move::Down, split[1].parse().unwrap()),
+                "L" => (Move::Left, split[1].parse().unwrap()),
+                "R" => (Move::Right, split[1].parse().unwrap()),
                 _ => unreachable!()
             }
         })
@@ -37,16 +37,45 @@ fn main() {
     let mut head: (i16, i16) = (0, 0);
     let mut tail: (i16, i16) = (0, 0);
 
-    for mv in moves {
-        head = match mv {
-            Move::Up(x) => (head.0, head.1 + x as i16),
-            Move::Down(x) => (head.0, head.1 - x as i16),
-            Move::Left(x) => (head.0 - x as i16, head.1),
-            Move::Right(x) => (head.0 + x as i16, head.1),
-        };
-
-        println!("head: {:?}", head);
+    for (mv, inc) in moves {
+        for _ in 0..inc {
+            match mv {
+                Move::Up => {
+                    head = (head.0, head.1 + 1);
+                    if head.1 > tail.1 + 1 {
+                        tail = (tail.0, tail.1 + 1);
+                        if tail.0 < head.0 { tail = (tail.0 + 1, tail.1); }
+                        if tail.0 > head.0 { tail = (tail.0 - 1, tail.1); }
+                    }
+                },
+                Move::Down => {
+                    head = (head.0, head.1 - 1);
+                    if head.1 < tail.1 - 1 {
+                        tail = (tail.0, tail.1 - 1);
+                        if tail.0 < head.0 { tail = (tail.0 + 1, tail.1); }
+                        if tail.0 > head.0 { tail = (tail.0 - 1, tail.1); }
+                    }
+                },
+                Move::Left => {
+                    head = (head.0 - 1, head.1);
+                    if head.0 < tail.0 - 1 {
+                        tail = (tail.0 - 1, tail.1);
+                        if tail.1 < head.1 { tail = (tail.0, tail.1 + 1); }
+                        if tail.1 > head.1 { tail = (tail.0, tail.1 - 1); }
+                    }
+                },
+                Move::Right => {
+                    head = (head.0 + 1, head.1);
+                    if head.0 > tail.0 + 1 {
+                        tail = (tail.0 + 1, tail.1);
+                        if tail.1 < head.1 { tail = (tail.0, tail.1 + 1); }
+                        if tail.1 > head.1 { tail = (tail.0, tail.1 - 1); }
+                    }
+                },
+            };
+            println!("head: {:?}, tail: {:?}", head, tail);
+        }
     }
 
-    println!("head: {:?}, tail: {:?}", head, tail);
+    // println!("head: {:?}, tail: {:?}", head, tail);
 }
