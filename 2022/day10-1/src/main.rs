@@ -56,7 +56,8 @@ fn main() {
     let results = cycles.iter()
         .enumerate()
         .filter(|(i, _)| (i + 1) % 40 == 20)
-        .map(|(_, x)| x)
-        .collect::<Vec<_>>();
-    println!("results: {:?}", results);
+        .map(|(i, x)| (i + 1) as i32 * (*x) as i32)
+        .sum::<i32>();
+
+    println!("results: {}", results);
 }
