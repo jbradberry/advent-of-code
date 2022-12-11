@@ -6,7 +6,7 @@ use regex::Regex;
 
 #[derive(Debug, Default)]
 struct Monkey {
-    starting: Vec<u32>,
+    items: Vec<u32>,
     operation: (String, String, String),
     test: u32,
     test_true: usize,
@@ -34,7 +34,7 @@ fn read() -> Vec<Monkey> {
         }
 
         if re_start.is_match(&line) {
-            monkey.starting = re_start.captures(&line).unwrap()[1]
+            monkey.items = re_start.captures(&line).unwrap()[1]
                 .split(", ")
                 .map(|x| x.parse().unwrap())
                 .collect();
@@ -67,14 +67,53 @@ fn main() {
     let mut inspections = vec![0; monkeys.len()];
     for _round in 0..20 {
         for i in 0..monkeys.len() {
-            for item in &monkeys[i].starting {
+            let mut throws = Vec::new();
+            {
+                let current_monkey = &monkeys[i];
+                for item in &current_monkey.items {
+                    let op = match current_monkey.operation.1.as_str() {
+                        "+" => u32::overflowing_add,
+                        "*" => u32::overflowing_mul,
+                        _ => unreachable!(),
+                    };
+                    let a = match current_monkey.operation.0.as_str() {
+                        "old" => *item,
+                        x @ _ => x.parse().unwrap(),
+                    };
+                    let b = match current_monkey.operation.2.as_str() {
+                        "old" => *item,
+                        x @ _ => x.parse().unwrap(),
+                    };
+
+                    let (mut new_level, _) = op(a, b);
+                    new_level = new_level.div_euclid(3);
+
+                    let new_monkey = match new_level % current_monkey.test == 0 {
+                        true => current_monkey.test_true,
+                        false => current_monkey.test_false,
+                    };
+                    throws.push((new_monkey, new_level));
+                }
             }
-            inspections[i] += monkeys[i].starting.len();
-            monkeys[i].starting.clear();
+            inspections[i] += monkeys[i].items.len();
+            monkeys[i].items.clear();
+            for (i2, item) in throws.into_iter() {
+                monkeys[i2].items.push(item);
+            }
         }
+
+        // for monkey in &monkeys {
+        //     println!("{:?}", monkey.items);
+        // }
+        // println!("");
     }
 
     for (i, insp) in inspections.iter().enumerate() {
         println!("Monkey {} inspected items {} times.", i, insp);
     }
+    println!("");
+    inspections.sort();
+    inspections.reverse();
+
+    println!("monkey business: {}", inspections[0] * inspections[1]);
 }
