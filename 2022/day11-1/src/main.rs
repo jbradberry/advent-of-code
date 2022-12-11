@@ -60,7 +60,21 @@ fn read() -> Vec<Monkey> {
 
 
 fn main() {
-    let monkeys = read();
+    let mut monkeys = read();
 
-    println!("monkeys: {:#?}", monkeys);
+    // println!("monkeys: {:#?}", monkeys);
+
+    let mut inspections = vec![0; monkeys.len()];
+    for _round in 0..20 {
+        for i in 0..monkeys.len() {
+            for item in &monkeys[i].starting {
+            }
+            inspections[i] += monkeys[i].starting.len();
+            monkeys[i].starting.clear();
+        }
+    }
+
+    for (i, insp) in inspections.iter().enumerate() {
+        println!("Monkey {} inspected items {} times.", i, insp);
+    }
 }
