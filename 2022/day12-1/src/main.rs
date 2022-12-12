@@ -1,7 +1,7 @@
 use std::io;
 use std::io::prelude::*;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 
 fn read() -> Vec<Vec<char>> {
@@ -65,12 +65,50 @@ fn calculate_legal(grid: &Vec<Vec<char>>) -> HashMap<(usize, usize), Vec<(usize,
 }
 
 
+fn calculate_steps(grid: &Vec<Vec<char>>) -> usize {
+    let legal = calculate_legal(&grid);
+
+    // println!("legal: {:?}", legal);
+
+    let start = grid.iter().enumerate()
+        .filter_map(|(i, row)| {
+            match row.iter().position(|&x| x == 'S') {
+                Some(j) => Some((i, j)),
+                None => None
+            }
+        })
+        .next().unwrap();
+    let end = grid.iter().enumerate()
+        .filter_map(|(i, row)| {
+            match row.iter().position(|&x| x == 'E') {
+                Some(j) => Some((i, j)),
+                None => None
+            }
+        })
+        .next().unwrap();
+
+    // println!("start: {:?}", start);
+    // println!("end: {:?}", end);
+
+    let mut visited: HashSet<(usize, usize)> = HashSet::new();
+    let mut last = HashSet::from([start]);
+    for steps in 1..(grid.len() * grid[0].len()) {
+        visited = visited.union(&last).cloned().collect();
+        last = last.iter().flat_map(|coord| legal.get(coord).unwrap().iter().cloned()).collect();
+
+        if last.contains(&end) { return steps; }
+    }
+
+    0
+}
+
+
 fn main() {
     let grid = read();
 
-    println!("grid: {:?}", grid);
+    // println!("grid: {:?}", grid);
 
-    let legal = calculate_legal(&grid);
+    let steps = calculate_steps(&grid);
 
-    println!("legal: {:?}", legal);
+    println!("min number of steps: {}", steps);
 }
