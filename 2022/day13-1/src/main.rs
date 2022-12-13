@@ -50,10 +50,17 @@ fn compare(left: &Value, right: &Value) -> Ordering {
 fn main() {
     let output = read().unwrap();
 
-    println!("{:?}", output);
+    // println!("{:?}", output);
 
-    for g in output.chunks(2) {
-        let result = compare(&g[0], &g[1]);
-        println!("{:?}", result);
-    }
+    let sum = output.chunks(2)
+        .enumerate()
+        .filter_map(|(i, g)| {
+            match compare(&g[0], &g[1]) {
+                Ordering::Greater => None,
+                _ => Some(i + 1)
+            }
+        })
+        .sum::<usize>();
+
+    println!("index sums: {}", sum);
 }
