@@ -109,9 +109,41 @@ fn display(grid: &HashMap<(usize, usize), Tile>) {
 }
 
 
+fn simulate(grid: &mut HashMap<(usize, usize), Tile>) -> bool {
+    let min_col = grid.keys().map(|&(c, _)| c).min().unwrap();
+    let max_col = grid.keys().map(|&(c, _)| c).max().unwrap();
+    let min_row = grid.keys().map(|&(_, r)| r).min().unwrap();
+    let max_row = grid.keys().map(|&(_, r)| r).max().unwrap();
+
+    let mut c = 500;
+    let mut r = 0;
+
+    loop {
+        if r > max_row || c < min_col || c > max_col { return false; }
+        match grid.get(&(c, r + 1)) {
+            Some(Tile::Void) | None => { r += 1; continue; },
+            Some(_) => {},
+        };
+        match grid.get(&(c - 1, r + 1)) {
+            Some(Tile::Void) | None => { r += 1; c -= 1; continue; },
+            Some(_) => {},
+        };
+        match grid.get(&(c + 1, r + 1)) {
+            Some(Tile::Void) | None => { r += 1; c += 1; continue; },
+            Some(_) => { grid.insert((c, r), Tile::Sand); break; },
+        };
+    }
+
+    display(grid);
+    true
+}
+
+
 fn main() {
     let paths = read();
-    let grid = calculate_grid(&paths);
+    let mut grid = calculate_grid(&paths);
 
-    display(&grid);
+    // display(&grid);
+
+    while simulate(&mut grid) {}
 }
