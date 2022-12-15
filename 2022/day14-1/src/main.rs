@@ -42,11 +42,25 @@ fn read() -> Vec<Vec<(usize, usize)>> {
 
 
 fn calculate_grid(paths: &Vec<Vec<(usize, usize)>>) -> HashMap<(usize, usize), Tile> {
-    let mut grid: HashMap<(usize, usize), Tile> = paths.iter()
-        .flat_map(|p| p.iter().map(|&c| (c, Tile::Rock)))
-        .collect();
-
+    let mut grid = HashMap::new();
     grid.insert((500, 0), Tile::Source);
+
+    for path in paths {
+        for w in path.windows(2) {
+            if w[0].0 == w[1].0 {
+                let (a, b) = if w[0].1 < w[1].1 { (w[0].1, w[1].1) } else { (w[1].1, w[0].1) };
+                for r in a..=b {
+                    grid.insert((w[0].0, r), Tile::Rock);
+                }
+            } else {
+                let (a, b) = if w[0].0 < w[1].0 { (w[0].0, w[1].0) } else { (w[1].0, w[0].0) };
+                for c in a..=b {
+                    grid.insert((c, w[0].1), Tile::Rock);
+                }
+            }
+        }
+        println!("");
+    }
 
     grid
 }
