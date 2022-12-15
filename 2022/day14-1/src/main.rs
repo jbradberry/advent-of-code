@@ -13,13 +13,13 @@ enum Tile {
 }
 
 
-impl From<char> for Tile {
-    fn from(c: char) -> Self {
-        match c {
-            '#' => Self::Rock,
-            'o' => Self::Sand,
-            '+' => Self::Source,
-            _ => Self::Void,
+impl From<Tile> for char {
+    fn from(t: Tile) -> Self {
+        match t {
+            Tile::Void => '.',
+            Tile::Rock => '#',
+            Tile::Sand => 'o',
+            Tile::Source => '+',
         }
     }
 }
@@ -62,11 +62,10 @@ fn display(grid: &HashMap<(usize, usize), Tile>) {
         let line = (min_col..=max_col)
             .map(|col| {
                 match grid.get(&(row, col)) {
-                    Some(&x) => x,
-                    None => Tile::Void,
+                    Some(&x) => x.into(),
+                    None => '.',
                 }
             })
-            .map(|t| t.into())
             .collect::<String>();
         println!("{}", line);
     }
