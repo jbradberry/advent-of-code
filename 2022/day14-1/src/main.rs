@@ -53,21 +53,44 @@ fn calculate_grid(paths: &Vec<Vec<(usize, usize)>>) -> HashMap<(usize, usize), T
 
 
 fn display(grid: &HashMap<(usize, usize), Tile>) {
-    let min_row = grid.keys().map(|&(r, _)| r).min().unwrap();
-    let max_row = grid.keys().map(|&(r, _)| r).max().unwrap();
-    let min_col = grid.keys().map(|&(_, c)| c).min().unwrap();
-    let max_col = grid.keys().map(|&(_, c)| c).max().unwrap();
+    let min_col = grid.keys().map(|&(c, _)| c).min().unwrap();
+    let max_col = grid.keys().map(|&(c, _)| c).max().unwrap();
+    let min_row = grid.keys().map(|&(_, r)| r).min().unwrap();
+    let max_row = grid.keys().map(|&(_, r)| r).max().unwrap();
+
+    let mut s = vec![
+        (min_col / 100).to_string(),
+        (min_col / 10 % 10).to_string(),
+        (min_col % 10).to_string()
+    ];
+    for col in min_col+1..max_col {
+        match col {
+            500 => {
+                s[0].push('5'); s[1].push('0'); s[2].push('0');
+            },
+            _ => {
+                s[0].push(' '); s[1].push(' '); s[2].push(' ');
+            },
+        };
+    }
+    s[0].push_str(&(max_col / 100).to_string());
+    s[1].push_str(&(max_col / 10 % 10).to_string());
+    s[2].push_str(&(max_col % 10).to_string());
+
+    println!("     {}", s[0]);
+    println!("     {}", s[1]);
+    println!("     {}", s[2]);
 
     for row in min_row..=max_row {
         let line = (min_col..=max_col)
             .map(|col| {
-                match grid.get(&(row, col)) {
+                match grid.get(&(col, row)) {
                     Some(&x) => x.into(),
                     None => '.',
                 }
             })
             .collect::<String>();
-        println!("{}", line);
+        println!("{:>3}  {}", row, line);
     }
 }
 
