@@ -4,7 +4,7 @@ use std::io::prelude::*;
 use std::collections::HashMap;
 
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 enum Tile {
     Void,
     Rock,
@@ -59,7 +59,6 @@ fn calculate_grid(paths: &Vec<Vec<(usize, usize)>>) -> HashMap<(usize, usize), T
                 }
             }
         }
-        println!("");
     }
 
     grid
@@ -134,7 +133,7 @@ fn simulate(grid: &mut HashMap<(usize, usize), Tile>) -> bool {
         };
     }
 
-    display(grid);
+    // display(grid);
     true
 }
 
@@ -146,4 +145,10 @@ fn main() {
     // display(&grid);
 
     while simulate(&mut grid) {}
+
+    let sand = grid.values()
+        .filter(|&&v| v == Tile::Sand)
+        .count();
+
+    println!("sand: {}", sand);
 }
