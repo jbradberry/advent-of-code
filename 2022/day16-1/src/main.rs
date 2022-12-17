@@ -70,41 +70,37 @@ fn main() {
         }
     }
 
-    let mut useful = valves.iter()
+    let useful = valves.iter()
         .filter(|(_, v)| v.0 != 0)
         .map(|(k, v)| (*k, v.0))
         .collect::<Vec<(usize, usize)>>();
-    useful.sort_by_key(|&(_, v)| v);
-    useful.reverse();
 
-    println!("useful: {:?}", useful);
+    // println!("useful: {:?}", useful);
 
     let mut best = 0;
-    for p in useful.iter().permutations(8) {
-        let mut location = start;
-        let mut total = 0;
-        let mut tick = 0;
+    let mut current = vec![(0, 30, vec![start])];
+    loop {
+        let mut new = Vec::new();
+        // println!("current: {:?}", current);
 
-        // println!("{:?}", p);
+        for (total, remaining, path) in current {
+            if path.len() == useful.len() { continue; }
 
-        for (i, (v, r)) in p.iter().enumerate() {
-            let d = cross.get(&(location, *v)).unwrap();
-
-            if *d < (30 - tick - 1) {
-                // println!("{} gets {} ticks", v, 30 - tick - d - 1);
-                total += (30 - tick - d - 1) * r;
+            for &(valve, rate) in &useful {
+                if path.contains(&valve) { continue; }
+                let d = cross.get(&(path[path.len() - 1], valve)).unwrap();
+                if d + 1 > remaining { continue; }
+                let new_total = total + rate * (remaining - d - 1);
+                new.push((new_total, remaining - d - 1, [&path[..], &[valve][..]].concat()));
+                if new_total > best {
+                    best = new_total;
+                    // println!("{:?}", new[new.len() - 1]);
+                }
             }
-            tick += d + 1;
-            if tick >= 30 { break; }
-
-            // if there is no way we can catch up with what is left, skip the rest
-            if total < best && (best - total) > (30 - tick - 1) * (p[(i + 1)..].iter().map(|(_, x)| x).sum::<usize>()) { break; }
-            location = *v;
         }
-
-        if total > best {
-            best = total;
-            println!("{:?}, {}", p, total);
-        }
+        if new.is_empty() { break; }
+        current = new;
     }
+
+    println!("best pressure: {}", best);
 }
